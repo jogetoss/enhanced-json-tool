@@ -1,6 +1,8 @@
 # Description
 
-This repository is meant to serve as a general template for how to set up new repositories in the JogetOSS organization. 
+This plugin works just like the default bundled JSON Tool in Joget, but with the added ability to format the JSON response prior to storing to form or workflow variable.
+
+The plugin's base implementation can be found on the Joget Community Github page [here](https://github.com/jogetworkflow/jw-community/blob/7.0-SNAPSHOT/wflow-core/src/main/java/org/joget/apps/app/lib/JsonTool.java).
 
 # Getting Help
 
