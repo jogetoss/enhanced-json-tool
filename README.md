@@ -4,6 +4,8 @@ This plugin works just like the default bundled JSON Tool in Joget, but with the
 
 The plugin's base implementation can be found on the Joget Community Github page [here](https://github.com/jogetworkflow/jw-community/blob/7.0-SNAPSHOT/wflow-core/src/main/java/org/joget/apps/app/lib/JsonTool.java).
 
+Do see [documentation and sample app](https://dev.joget.org/community/display/marketplace/Enhanced+JSON+Tool+Plugin).
+
 # Getting Help
 
 JogetOSS is a community-led team for open source software related to the [Joget](https://www.joget.org) no-code/low-code application platform.
