@@ -180,6 +180,8 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                     
                     storeToForm(wfAssignment, properties, object);
                     storeToWorkflowVariable(wfAssignment, properties, object);
+                    
+                    return object;
                 }
             }
         } catch (Exception ex) {
