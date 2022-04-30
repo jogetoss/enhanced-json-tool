@@ -1,6 +1,12 @@
 # Description
 
-This plugin works just like the default bundled JSON Tool in Joget, but with the added ability to format the JSON response prior to storing to form or workflow variable.
+This plugin works just like the default bundled JSON Tool in Joget, but with the following added abilities:-
+
+-with GET, PUT and POST methods.
+-Send files in POST method.
+-Receive file and store into a Joget form file upload.
+-Save response status to a Joget form record or workflow variable.
+-Format the JSON response prior to storing into Joget form record or workflow variable.
 
 The plugin's base implementation can be found on the Joget Community Github page [here](https://github.com/jogetworkflow/jw-community/blob/7.0-SNAPSHOT/wflow-core/src/main/java/org/joget/apps/app/lib/JsonTool.java).
 
