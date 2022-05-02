@@ -74,7 +74,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
     }
 
     public String getVersion() {
-        return "7.0.1";
+        return "7.0.2";
     }
 
     public String getLabel() {
@@ -386,7 +386,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                     FormRowSet rowSet = new FormRowSet();
                     FormRow row = new FormRow();
                     
-                    if(!recordId.isEmpty()){
+                    if(recordId.isEmpty()){
                         recordId = UuidGenerator.getInstance().getUuid();
                         row = new FormRow();
                         row.put(fileUploadID, fileName);
