@@ -2,7 +2,7 @@
 
 This plugin works just like the default bundled JSON Tool in Joget, but with the following added abilities:-
 
-- with GET, PUT and POST methods.
+- with GET, PATCH, PUT and POST methods.
 - Send files in POST method.
 - Receive file and store into a Joget form file upload.
 - Save response status to a Joget form record or workflow variable.
