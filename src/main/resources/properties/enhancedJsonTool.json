@@ -25,6 +25,10 @@
                {
                   "value":"put",
                   "label":"@@app.jsontool.requestType.put@@"
+               },
+               {
+                  "value":"patch",
+                  "label":"@@app.jsontool.requestType.patch@@"
                }
             ]
          },
@@ -48,7 +52,7 @@
                }
             ],
             "control_field":"requestType",
-            "control_value":"post|put",
+            "control_value":"post|put|patch",
             "control_use_regex":"true"
          },
          {
