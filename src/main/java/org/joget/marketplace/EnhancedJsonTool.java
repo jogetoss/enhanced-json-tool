@@ -60,6 +60,8 @@ import org.joget.workflow.model.service.WorkflowManager;
 import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
+import java.net.ProxySelector;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
 public class EnhancedJsonTool extends DefaultApplicationPlugin {
     private final static String MESSAGE_PATH = "messages/enhancedJsonTool";
@@ -73,7 +75,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
     }
 
     public String getVersion() {
-        return "7.0.3";
+        return "7.0.4";
     }
 
     public String getLabel() {
@@ -108,7 +110,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         Object jsonResponseObjectRaw = null;
         
         try {
-            client = HttpClients.createDefault();
+            client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
             jsonUrl = WorkflowUtil.processVariable(jsonUrl, "", wfAssignment);
             jsonUrl = StringUtil.encodeUrlParam(jsonUrl);
 
