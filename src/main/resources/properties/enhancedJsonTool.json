@@ -3,6 +3,70 @@
       "title":"@@app.jsontool.config@@",
       "properties":[
          {
+            "name":"accessToken",
+            "label":"@@app.enhancedJsonTool.accessToken@@",
+            "type":"checkbox",
+            "options":[
+               {
+                  "value":"true",
+                  "label":""
+               }
+            ]
+         },
+         {
+            "name":"tokenUrl",
+            "label":"@@app.enhancedJsonTool.tokenUrl@@",
+            "type":"textfield",
+            "required":"True",
+            "control_field":"accessToken",
+            "control_value":"true"
+         },
+         {
+            "name":"tokenRequestType",
+            "label":"@@app.enhancedJsonTool.tokenRequestType@@",
+            "type":"selectbox",
+            "value":"",
+            "control_field":"accessToken",
+            "control_value":"true",
+            "options":[
+               {
+                  "value":"get",
+                  "label":"@@app.jsontool.requestType.get@@"
+               },
+               {
+                  "value":"post",
+                  "label":"@@app.jsontool.requestType.post@@"
+               }
+            ]
+         },
+         {
+            "name":"tokenJsonBoy",
+            "label":"@@app.enhancedJsonTool.tokenJsonBoy@@",
+            "type":"textarea",
+            "control_field":"tokenRequestType",
+            "control_value":"post"
+         },
+         {
+            "name":"tokenFieldName",
+            "label":"@@app.enhancedJsonTool.accessToken.tokenFieldName@@",
+            "type":"textfield",
+            "required":"True",
+            "control_field":"accessToken",
+            "control_value":"true"
+         },
+         {
+            "label" : "@@app.enhancedJsonTool.accessToken.important@@",
+            "type" : "header",
+            "description" : "@@app.enhancedJsonTool.accessToken.desc@@",
+            "control_field":"accessToken",
+            "control_value":"true"    
+        }
+      ]
+   },
+   {
+      "title":"@@app.jsontool.config@@",
+      "properties":[
+         {
             "name":"jsonUrl",
             "label":"@@app.jsontool.jsonUrl@@",
             "type":"textfield",
@@ -132,89 +196,88 @@
       ]
    },
    {
-        "title":"@@app.enhancedJsonTool.sendAttachments@@",
-        "properties":[
-           {
-              "name":"attachmentFormDefId",
-              "label":"@@app.emailtool.form@@",
-              "type":"selectbox",
-              "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/forms/options"
-           },
-           {
-              "name":"attachmentFields",
-              "label":"@@app.emailtool.fields@@",
-              "description":"@@app.enhancedJsonTool.sendAttachments.attachmentFields.desc@@",
-              "type":"grid",
-              "columns":[
-                 {
-                    "key":"parameterName",
-                    "label":"Parameter @@app.jsontool.name@@"
-                 },
-                 {
-                    "key":"field",
-                    "label":"@@app.emailtool.fieldId@@",
-                    "options_ajax_on_change" : "formDefId:attachmentFormDefId",
-                    "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
-                 }
-                 
-              ]
-           },
-           {
-              "name":"attachmentFiles",
-              "label":"@@app.emailtool.files@@",
-              "type":"grid",
-              "columns":[
-                 {
-                    "key":"parameterName",
-                    "label":"Parameter @@app.jsontool.name@@"
-                 },
-                 {
-                    "key":"path",
-                    "label":"@@app.emailtool.path@@"
-                 },
-                 {
-                    "key":"type",
-                    "label":"@@app.emailtool.pathType@@",
-                    "options":[
-                       {
-                          "value":"system",
-                          "label":"@@app.emailtool.pathType.system@@"
-                       },
-                       {
-                          "value":"url",
-                          "label":"@@app.emailtool.pathType.url@@"
-                       }
-                    ]
-                 }
-              ]
-           }
-        ],
-        "control_field":"postMethod",
-        "control_value":"",
-        "control_use_regex":"false"
+      "title":"@@app.enhancedJsonTool.sendAttachments@@",
+      "properties":[
+         {
+            "name":"attachmentFormDefId",
+            "label":"@@app.emailtool.form@@",
+            "type":"selectbox",
+            "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/forms/options"
+         },
+         {
+            "name":"attachmentFields",
+            "label":"@@app.emailtool.fields@@",
+            "description":"@@app.enhancedJsonTool.sendAttachments.attachmentFields.desc@@",
+            "type":"grid",
+            "columns":[
+               {
+                  "key":"parameterName",
+                  "label":"Parameter @@app.jsontool.name@@"
+               },
+               {
+                  "key":"field",
+                  "label":"@@app.emailtool.fieldId@@",
+                  "options_ajax_on_change":"formDefId:attachmentFormDefId",
+                  "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+               }
+            ]
+         },
+         {
+            "name":"attachmentFiles",
+            "label":"@@app.emailtool.files@@",
+            "type":"grid",
+            "columns":[
+               {
+                  "key":"parameterName",
+                  "label":"Parameter @@app.jsontool.name@@"
+               },
+               {
+                  "key":"path",
+                  "label":"@@app.emailtool.path@@"
+               },
+               {
+                  "key":"type",
+                  "label":"@@app.emailtool.pathType@@",
+                  "options":[
+                     {
+                        "value":"system",
+                        "label":"@@app.emailtool.pathType.system@@"
+                     },
+                     {
+                        "value":"url",
+                        "label":"@@app.emailtool.pathType.url@@"
+                     }
+                  ]
+               }
+            ]
+         }
+      ],
+      "control_field":"postMethod",
+      "control_value":"",
+      "control_use_regex":"false"
    },
    {
-     "title":"@@app.enhancedJsonTool.storeAttachments@@",
-        "properties":[
-            {
-                "name":"storeAttachmentFormDefId",
-                "label":"@@app.emailtool.form@@",
-                "type":"selectbox",
-                "options_ajax":"[CONTEXT_PATH]/web/json/console/app/%s/%s/forms/options",
-                "description":"@@app.jsontool.responseStatusFormDefId.desc@@"
-             },
-             {
-                "name":"storeAttachmentFieldID",
-                "label":"@@app.enhancedJsonTool.storeAttachmentsField@@",
-                "type":"selectbox",
-                "description" : "@@app.jsontool.responseStatusIdField.desc@@",
-                "options_ajax_on_change" : "formDefId:storeAttachmentFormDefId",
-                "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
-             }
-        ],
-        "control_field":"responseType",
-        "control_value":"File",
-        "control_use_regex":"false"
+      "title":"@@app.enhancedJsonTool.storeAttachments@@",
+      "properties":[
+         {
+            "name":"storeAttachmentFormDefId",
+            "label":"@@app.emailtool.form@@",
+            "type":"selectbox",
+            "options_ajax":"[CONTEXT_PATH]/web/json/console/app/%s/%s/forms/options",
+            "description":"@@app.jsontool.responseStatusFormDefId.desc@@"
+         },
+         {
+            "name":"storeAttachmentFieldID",
+            "label":"@@app.enhancedJsonTool.storeAttachmentsField@@",
+            "type":"selectbox",
+            "description":"@@app.jsontool.responseStatusIdField.desc@@",
+            "options_ajax_on_change":"formDefId:storeAttachmentFormDefId",
+            "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+         }
+      ],
+      "control_field":"responseType",
+      "control_value":"File",
+      "control_use_regex":"false"
    },
    {
       "title":"@@app.enhancedjsontool.formatResponse@@",
@@ -325,33 +388,33 @@
             "name":"responseStatusIdField",
             "label":"@@app.jsontool.responseStatusIdField@@",
             "type":"selectbox",
-            "description" : "@@app.jsontool.responseStatusIdField.desc@@",
-            "options_ajax_on_change" : "formDefId:responseStatusFormDefId",
-            "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
-            "control_field": "responseStatusFormDefId",
-            "control_value": ".+",
-            "control_use_regex": "true"
+            "description":"@@app.jsontool.responseStatusIdField.desc@@",
+            "options_ajax_on_change":"formDefId:responseStatusFormDefId",
+            "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
+            "control_field":"responseStatusFormDefId",
+            "control_value":".+",
+            "control_use_regex":"true"
          },
          {
             "name":"responseStatusResponseDataField",
             "label":"@@app.jsontool.responseStatusResponseDataField@@",
             "type":"selectbox",
-            "options_ajax_on_change" : "formDefId:responseStatusFormDefId",
-            "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
-            "control_field": "responseStatusFormDefId",
-            "control_value": ".+",
-            "control_use_regex": "true"
+            "options_ajax_on_change":"formDefId:responseStatusFormDefId",
+            "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
+            "control_field":"responseStatusFormDefId",
+            "control_value":".+",
+            "control_use_regex":"true"
          },
          {
             "name":"responseStatusStatusField",
             "label":"@@app.jsontool.responseStatusStatusField@@",
             "type":"selectbox",
             "required":"True",
-            "options_ajax_on_change" : "formDefId:responseStatusFormDefId",
-            "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
-            "control_field": "responseStatusFormDefId",
-            "control_value": ".+",
-            "control_use_regex": "true"
+            "options_ajax_on_change":"formDefId:responseStatusFormDefId",
+            "options_ajax":"[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
+            "control_field":"responseStatusFormDefId",
+            "control_value":".+",
+            "control_use_regex":"true"
          },
          {
             "name":"responseStatusFieldMapping",

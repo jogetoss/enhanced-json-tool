@@ -62,28 +62,35 @@ import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 
 public class EnhancedJsonTool extends DefaultApplicationPlugin {
+
     private final static String MESSAGE_PATH = "messages/enhancedJsonTool";
-    
+
+    @Override
     public String getName() {
-        return AppPluginUtil.getMessage("app.enhancedjsontool.pluginLabel", getClassName(), MESSAGE_PATH);  
+        return AppPluginUtil.getMessage("app.enhancedjsontool.pluginLabel", getClassName(), MESSAGE_PATH);
     }
 
+    @Override
     public String getDescription() {
         return AppPluginUtil.getMessage("app.enhancedjsontool.pluginDesc", getClassName(), MESSAGE_PATH);
     }
 
+    @Override
     public String getVersion() {
-        return "7.0.3";
+        return "7.0.4";
     }
 
+    @Override
     public String getLabel() {
         return AppPluginUtil.getMessage("app.enhancedjsontool.pluginLabel", getClassName(), MESSAGE_PATH);
     }
 
+    @Override
     public String getClassName() {
         return getClass().getName();
     }
 
+    @Override
     public String getPropertyOptions() {
         AppDefinition appDef = AppUtil.getCurrentAppDefinition();
         String appId = appDef.getId();
@@ -98,33 +105,41 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         WorkflowAssignment wfAssignment = (WorkflowAssignment) properties.get("workflowAssignment");
         ApplicationContext ac = AppUtil.getApplicationContext();
         WorkflowManager workflowManager = (WorkflowManager) ac.getBean("workflowManager");
-        
+
+        // process the accessToken call if checked
+        String accessToken = "";
+        String accessTokenCheck = (String) properties.get("accessToken");
+        if ("true".equalsIgnoreCase(accessTokenCheck)) {
+            TokenApiUtil tokenUtil = new TokenApiUtil();
+            accessToken = tokenUtil.getToken(properties);
+        }
+
         String jsonUrl = (String) properties.get("jsonUrl");
         CloseableHttpClient client = null;
         HttpRequestBase request = null;
-        
+
         String jsonResponse = "";
         Map jsonResponseObject = null;
         Object jsonResponseObjectRaw = null;
-        
+
         try {
             client = HttpClients.createDefault();
             jsonUrl = WorkflowUtil.processVariable(jsonUrl, "", wfAssignment);
             jsonUrl = StringUtil.encodeUrlParam(jsonUrl);
 
             if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
-                LogUtil.info(EnhancedJsonTool.class.getName(), ("post".equalsIgnoreCase(getPropertyString("requestType"))?"POST":"GET") + " : " + jsonUrl);
+                LogUtil.info(EnhancedJsonTool.class.getName(), ("post".equalsIgnoreCase(getPropertyString("requestType")) ? "POST" : "GET") + " : " + jsonUrl);
             }
-            
+
             if ("post".equalsIgnoreCase(getPropertyString("requestType"))) {
                 request = new HttpPost(jsonUrl);
-                
+
                 if ("jsonPayload".equals(getPropertyString("postMethod"))) {
                     JSONObject obj = new JSONObject();
                     Object[] paramsValues = (Object[]) properties.get("params");
                     for (Object o : paramsValues) {
                         Map mapping = (HashMap) o;
-                        String name  = mapping.get("name").toString();
+                        String name = mapping.get("name").toString();
                         String value = mapping.get("value").toString();
                         obj.accumulate(name, WorkflowUtil.processVariable(value, "", wfAssignment));
                     }
@@ -147,7 +162,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                     Object[] paramsValues = (Object[]) properties.get("params");
                     for (Object o : paramsValues) {
                         Map mapping = (HashMap) o;
-                        String name  = mapping.get("name").toString();
+                        String name = mapping.get("name").toString();
                         String value = mapping.get("value").toString();
                         //urlParameters.add(new BasicNameValuePair(name, WorkflowUtil.processVariable(value, "", wfAssignment)));
                         builder.addPart(name, new StringBody(value, ContentType.MULTIPART_FORM_DATA));
@@ -155,16 +170,16 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                             LogUtil.info(EnhancedJsonTool.class.getName(), "Adding param " + name + " : " + value);
                         }
                     }
-                    
-                    if( (properties.get("attachmentFormDefId") != null && !properties.get("attachmentFormDefId").toString().isEmpty())
-                         || (properties.get("attachmentFiles") != null && !properties.get("attachmentFiles").toString().isEmpty()) ) {
+
+                    if ((properties.get("attachmentFormDefId") != null && !properties.get("attachmentFormDefId").toString().isEmpty())
+                            || (properties.get("attachmentFiles") != null && !properties.get("attachmentFiles").toString().isEmpty())) {
                         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
                     }
-                    
+
                     //handle file upload from form
                     String formDefId = (String) properties.get("attachmentFormDefId");
                     Object[] fields = null;
-                    if (properties.get("attachmentFields") instanceof Object[]){
+                    if (properties.get("attachmentFields") instanceof Object[]) {
                         fields = (Object[]) properties.get("attachmentFields");
                     }
                     if (formDefId != null && !formDefId.isEmpty() && fields != null && fields.length > 0) {
@@ -201,15 +216,15 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                                         }
                                     }
                                 }
-                            } catch(Exception e){
+                            } catch (Exception e) {
                                 LogUtil.info(EnhancedJsonTool.class.getName(), "Attach file from form failed from field \"" + fieldId + "\" in form \"" + formDefId + "\"");
                             }
                         }
                     }
-                    
+
                     //handle file upload from url/path
                     Object[] files = null;
-                    if (properties.get("attachmentFiles") instanceof Object[]){
+                    if (properties.get("attachmentFiles") instanceof Object[]) {
                         files = (Object[]) properties.get("attachmentFiles");
                     }
                     if (files != null && files.length > 0) {
@@ -227,33 +242,33 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                                     File file = new File(path);
                                     FileBody fileBody = new FileBody(file);
                                     builder.addPart(parameterName, fileBody);
-                                } else if("url".equals(type)) {
+                                } else if ("url".equals(type)) {
                                     if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
                                         LogUtil.info(EnhancedJsonTool.class.getName(), "Attaching URL path " + path);
                                     }
                                     URL u = new URL(path);
                                     CustomURLDataSource c = new CustomURLDataSource(u);
                                     builder.addBinaryBody(parameterName, c.getInputStream().readAllBytes(), ContentType.create(c.getContentType()), c.getName());
-                                    
+
                                 }
-                            } catch(Exception e){
+                            } catch (Exception e) {
                                 LogUtil.error(EnhancedJsonTool.class.getName(), e, "File attachment failed from path \"" + path + "\"");
                             }
                         }
                     }
-                    
+
                     HttpEntity entity = builder.build();
                     ((HttpPost) request).setEntity(entity);
                 }
             } else if ("put".equalsIgnoreCase(getPropertyString("requestType"))) {
                 request = new HttpPut(jsonUrl);
-                
+
                 if ("jsonPayload".equals(getPropertyString("postMethod"))) {
                     JSONObject obj = new JSONObject();
                     Object[] paramsValues = (Object[]) properties.get("params");
                     for (Object o : paramsValues) {
                         Map mapping = (HashMap) o;
-                        String name  = mapping.get("name").toString();
+                        String name = mapping.get("name").toString();
                         String value = mapping.get("value").toString();
                         obj.accumulate(name, WorkflowUtil.processVariable(value, "", wfAssignment));
                     }
@@ -276,7 +291,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                     Object[] paramsValues = (Object[]) properties.get("params");
                     for (Object o : paramsValues) {
                         Map mapping = (HashMap) o;
-                        String name  = mapping.get("name").toString();
+                        String name = mapping.get("name").toString();
                         String value = mapping.get("value").toString();
                         urlParameters.add(new BasicNameValuePair(name, WorkflowUtil.processVariable(value, "", wfAssignment)));
                         if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
@@ -287,13 +302,13 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                 }
             } else if ("patch".equalsIgnoreCase(getPropertyString("requestType"))) {
                 request = new HttpPatch(jsonUrl);
-                
+
                 if ("jsonPayload".equals(getPropertyString("postMethod"))) {
                     JSONObject obj = new JSONObject();
                     Object[] paramsValues = (Object[]) properties.get("params");
                     for (Object o : paramsValues) {
                         Map mapping = (HashMap) o;
-                        String name  = mapping.get("name").toString();
+                        String name = mapping.get("name").toString();
                         String value = mapping.get("value").toString();
                         obj.accumulate(name, WorkflowUtil.processVariable(value, "", wfAssignment));
                     }
@@ -316,7 +331,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                     Object[] paramsValues = (Object[]) properties.get("params");
                     for (Object o : paramsValues) {
                         Map mapping = (HashMap) o;
-                        String name  = mapping.get("name").toString();
+                        String name = mapping.get("name").toString();
                         String value = mapping.get("value").toString();
                         urlParameters.add(new BasicNameValuePair(name, WorkflowUtil.processVariable(value, "", wfAssignment)));
                         if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
@@ -328,31 +343,34 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             } else {
                 request = new HttpGet(jsonUrl);
             }
-            
+
             Object[] paramsValues = (Object[]) properties.get("headers");
             for (Object o : paramsValues) {
                 Map mapping = (HashMap) o;
-                String name  = mapping.get("name").toString();
+                String name = mapping.get("name").toString();
                 String value = mapping.get("value").toString();
                 if (name != null && !name.isEmpty() && value != null && !value.isEmpty()) {
+                    if (value != null && value.contains("{accessToken}")) {
+                        value = value.replace("{accessToken}", accessToken);
+                    }
                     request.setHeader(name, value);
                     if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
                         LogUtil.info(EnhancedJsonTool.class.getName(), "Adding request header " + name + " : " + value);
                     }
                 }
             }
-            
+
             HttpResponse response = client.execute(request);
             if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
                 LogUtil.info(EnhancedJsonTool.class.getName(), jsonUrl + " returned with status : " + response.getStatusLine().getStatusCode());
             }
-            
+
             String responseType = getPropertyString("responseType");
-            
-            if ( !responseType.isEmpty() && response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300  ) {
-                
-                if(responseType.equalsIgnoreCase("JSON")){
-                //if(response.getEntity().getContentType().getValue().equalsIgnoreCase("application/json")){
+
+            if (!responseType.isEmpty() && response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300) {
+
+                if (responseType.equalsIgnoreCase("JSON")) {
+                    //if(response.getEntity().getContentType().getValue().equalsIgnoreCase("application/json")){
                     jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
                     String jsonResponseFormatted = jsonResponse;
                     if (jsonResponseFormatted != null && !jsonResponseFormatted.isEmpty()) {
@@ -360,7 +378,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                             jsonResponseFormatted = "{ \"response\" : " + jsonResponseFormatted + " }";
                         }
 
-                        if( !jsonResponseFormatted.startsWith("{") && !jsonResponseFormatted.endsWith("}")){
+                        if (!jsonResponseFormatted.startsWith("{") && !jsonResponseFormatted.endsWith("}")) {
                             jsonResponseFormatted = "{ \"response\" : " + jsonResponseFormatted + " }";
                         }
 
@@ -381,26 +399,26 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                             script = WorkflowUtil.processVariable(script, "", wfAssignment, "", replaceMap);
                             jsonResponseObjectRaw = executeScript(script, properties);
                         }
-                        
+
                         String formDefId = (String) properties.get("formDefId");
                         if (formDefId != null && formDefId.trim().length() > 0) {
-                            if(jsonResponseObjectRaw != null){
+                            if (jsonResponseObjectRaw != null) {
                                 jsonResponseObject = (Map) jsonResponseObjectRaw;
                             }
                             storeToForm(wfAssignment, properties, jsonResponseObject);
                         }
-                        
+
                         Object[] wfVariableMapping = (Object[]) properties.get("wfVariableMapping");
                         if (wfVariableMapping != null && wfVariableMapping.length > 0) {
-                            if(jsonResponseObjectRaw != null){
+                            if (jsonResponseObjectRaw != null) {
                                 jsonResponseObject = (Map) jsonResponseObjectRaw;
                             }
                             storeToWorkflowVariable(wfAssignment, properties, jsonResponseObject);
                         }
                     }
-                }else{
+                } else {
                     //assume binary
-                    
+
                     //attempt to get filename
                     String fileName = "";
                     try {
@@ -413,83 +431,83 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                                 fileName = nmv.getValue();
                             }
                         }
-                    } catch(Exception ex){
+                    } catch (Exception ex) {
                         LogUtil.info(getClass().getName(), "Cannot get file name automatically");
                     }
-                    
-                    if (fileName.isEmpty()){
+
+                    if (fileName.isEmpty()) {
                         String[] n = request.getURI().getPath().split("/");
-                        fileName = n[n.length-1];
+                        fileName = n[n.length - 1];
                     }
-                    
-                    if (fileName.isEmpty()){
+
+                    if (fileName.isEmpty()) {
                         fileName = "downloaded";
                     }
-                    
+
                     //save filename into existing form row record
                     AppService appService = (AppService) ac.getBean("appService");
                     String recordId = appService.getOriginProcessId(wfAssignment.getProcessId());
                     String formDefId = (String) properties.get("storeAttachmentFormDefId");
                     String fileUploadID = properties.get("storeAttachmentFieldID").toString();
-                    
+
                     FormRowSet rowSet = new FormRowSet();
                     FormRow row = new FormRow();
-                    
-                    if(recordId.isEmpty()){
+
+                    if (recordId.isEmpty()) {
                         recordId = UuidGenerator.getInstance().getUuid();
                         row = new FormRow();
                         row.put(fileUploadID, fileName);
-                    }else{
+                    } else {
                         rowSet = appService.loadFormData(appDef.getAppId(), appDef.getVersion().toString(), formDefId, recordId);
                         row = rowSet.get(0);
                         rowSet.remove(0);
                     }
                     row.put(fileUploadID, fileName);
                     rowSet.add(0, row);
-                    
+
                     appService.storeFormData(appDef.getAppId(), appDef.getVersion().toString(), formDefId, rowSet, recordId);
-                    
+
                     //save actual file into wflow folder
                     String tableName = appService.getFormTableName(appDef, formDefId);
                     String filePath = FileUtil.getUploadPath(tableName, wfAssignment.getProcessId());
-                    
+
                     File file = new File(filePath);
                     file.mkdirs();
-                    
+
                     filePath = filePath + fileName;
-                    
+
                     FileOutputStream fos = null;
-                    try (InputStream is = response.getEntity().getContent()) {
+                    try ( InputStream is = response.getEntity().getContent()) {
                         fos = new FileOutputStream(new File(filePath));
                         int inByte;
-                        while((inByte = is.read()) != -1){
+                        while ((inByte = is.read()) != -1) {
                             fos.write(inByte);
                         }
-                    } catch(Exception ex){
+                    } catch (Exception ex) {
                         LogUtil.error(getClass().getName(), ex, "Cannot save file");
-                    } finally{
+                    } finally {
                         fos.close();
                     }
                 }
             }
-            
-            if ( !getPropertyString("responseStatusWorkflowVariable").isEmpty() ){
+
+            if (!getPropertyString("responseStatusWorkflowVariable").isEmpty()) {
                 workflowManager.activityVariable(wfAssignment.getActivityId(), getPropertyString("saveStatusToWorkflowVariable"), response.getStatusLine().getStatusCode());
             }
-            
-            if ( !getPropertyString("responseStatusFormDefId").isEmpty() ){
-                storeStatusToForm(wfAssignment, properties, String.valueOf(response.getStatusLine().getStatusCode()), jsonResponse );
+
+            if (!getPropertyString("responseStatusFormDefId").isEmpty()) {
+                storeStatusToForm(wfAssignment, properties, String.valueOf(response.getStatusLine().getStatusCode()), jsonResponse);
             }
-            
+
             return jsonResponseObjectRaw;
-            
+
         } catch (Exception ex) {
             LogUtil.error(getClass().getName(), ex, "");
-            
-            if ( !getPropertyString("saveStatusToWorkflowVariable").isEmpty() ){
+
+            if (!getPropertyString("saveStatusToWorkflowVariable").isEmpty()) {
                 workflowManager.activityVariable(wfAssignment.getActivityId(), getPropertyString("saveStatusToWorkflowVariable"), ex.toString());
             }
-            if ( !getPropertyString("responseStatusFormDefId").isEmpty() ){
+            if (!getPropertyString("responseStatusFormDefId").isEmpty()) {
                 storeStatusToForm(wfAssignment, properties, ex.toString() + " - " + ex.getMessage(), jsonResponse);
             }
         } finally {
@@ -507,14 +525,14 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
         return null;
     }
-    
+
     protected void storeStatusToForm(WorkflowAssignment wfAssignment, Map properties, String status, String jsonResponse) {
         String formDefId = (String) properties.get("responseStatusFormDefId");
         String statusField = (String) properties.get("responseStatusStatusField");
         String responseDataField = (String) properties.get("responseStatusResponseDataField");
         String idField = (String) properties.get("responseStatusIdField");
         Object[] fieldMapping = (Object[]) properties.get("responseStatusFieldMapping");
-        
+
         if (formDefId != null && formDefId.trim().length() > 0) {
             ApplicationContext ac = AppUtil.getApplicationContext();
             AppService appService = (AppService) ac.getBean("appService");
@@ -522,29 +540,29 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
             FormRowSet rowSet = new FormRowSet();
             FormRow row = new FormRow();
-            
-            if(!responseDataField.isEmpty()){
+
+            if (!responseDataField.isEmpty()) {
                 row.put(responseDataField, jsonResponse);
             }
-            
-            if(!idField.isEmpty()){
+
+            if (!idField.isEmpty()) {
                 row.put(idField, appService.getOriginProcessId(wfAssignment.getProcessId()));
-            }else{
+            } else {
                 row.setId(appService.getOriginProcessId(wfAssignment.getProcessId()));
             }
-            
-            for(Object obj : fieldMapping){
+
+            for (Object obj : fieldMapping) {
                 Map map = (Map) obj;
                 row.put(map.get("field").toString(), map.get("value").toString());
             }
-            
+
             row.put(statusField, status);
             rowSet.add(row);
-            
+
             appService.storeFormData(appDef.getId(), appDef.getVersion().toString(), formDefId, rowSet, null);
         }
     }
-    
+
     protected void storeToForm(WorkflowAssignment wfAssignment, Map properties, Map object) {
         String formDefId = (String) properties.get("formDefId");
         if (formDefId != null && formDefId.trim().length() > 0) {
@@ -556,7 +574,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             String multirowBaseObjectName = (String) properties.get("multirowBaseObject");
 
             FormRowSet rowSet = new FormRowSet();
-            
+
             if (multirowBaseObjectName != null && multirowBaseObjectName.trim().length() > 0 && getObjectFromMap(multirowBaseObjectName, object) != null && getObjectFromMap(multirowBaseObjectName, object).getClass().isArray()) {
                 Object[] baseObjectArray = (Object[]) getObjectFromMap(multirowBaseObjectName, object);
                 if (baseObjectArray != null && baseObjectArray.length > 0) {
@@ -647,7 +665,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
         if (row.getId() == null || (row.getId() != null && row.getId().trim().length() == 0)) {
             if (multirowBaseObjectName == null) {
-                AppService appService = (AppService)AppUtil.getApplicationContext().getBean("appService");
+                AppService appService = (AppService) AppUtil.getApplicationContext().getBean("appService");
                 row.setId(appService.getOriginProcessId(wfAssignment.getProcessId()));
             } else {
                 row.setId(UuidGenerator.getInstance().getUuid());
@@ -687,7 +705,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         }
         return "";
     }
-    
+
     protected Object executeScript(String script, Map properties) {
         Object result = null;
         try {
@@ -704,18 +722,18 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             return null;
         }
     }
-    
+
     //copied from AppUtil
     protected String retrieveFileNames(String content, String appId, String formId, String primaryKey) {
         Set<String> values = new HashSet<String>();
-        
-        Pattern pattern = Pattern.compile("<img[^>]*src=\"[^\"]*/web/client/app/"+StringUtil.escapeRegex(appId)+"/form/download/"+StringUtil.escapeRegex(formId)+"/"+StringUtil.escapeRegex(primaryKey)+"/([^\"]*)\\.\"[^>]*>");
+
+        Pattern pattern = Pattern.compile("<img[^>]*src=\"[^\"]*/web/client/app/" + StringUtil.escapeRegex(appId) + "/form/download/" + StringUtil.escapeRegex(formId) + "/" + StringUtil.escapeRegex(primaryKey) + "/([^\"]*)\\.\"[^>]*>");
         Matcher matcher = pattern.matcher(content);
         while (matcher.find()) {
             String fileName = matcher.group(1);
             values.add(fileName);
         }
-        
+
         return String.join(";", values);
     }
 }
