@@ -13,6 +13,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.joget.commons.util.LogUtil;
+import java.net.ProxySelector;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +32,7 @@ public class TokenApiUtil {
         HttpRequestBase tokenRequest = null;
         if ("post".equalsIgnoreCase(tokenRequestType)) {
             try {
-                client = HttpClients.createDefault();
+                client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
                 tokenRequest = new HttpPost(tokenUrl);
                 StringEntity entity;
                 tokenRequest = new HttpPost(tokenUrl);
@@ -63,7 +65,7 @@ public class TokenApiUtil {
             }
         } else {
             try {
-                client = HttpClients.createDefault();
+                client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
                 tokenRequest = new HttpGet(tokenUrl);
                 HttpResponse response = client.execute(tokenRequest);
                 if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300) {
