@@ -1,7 +1,6 @@
 package org.joget.marketplace;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Map;
 import org.apache.http.HttpResponse;
