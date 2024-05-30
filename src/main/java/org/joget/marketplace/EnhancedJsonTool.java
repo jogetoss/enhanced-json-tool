@@ -616,7 +616,26 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
     }
 
     protected Object getObjectFromMap(String key, Map object) {
-        if (key.contains(".")) {
+        /*  Added {} annotation to handle the keys which contains . eg { "user.Org":"Joget Inc"} 
+            Using annotation like {user.Org} in the field mapping it will be able to parse the records
+         */
+        if (key.startsWith("{")) {
+            String key1 = key.substring(1, key.indexOf("}")); //{search.name}
+            Object tempObject = object.get(key1);
+
+            String subKey = key.replace("{" + key1 + "}", ""); //{search.name}.first to .first
+            if (subKey.startsWith(".")) {
+                subKey = subKey.substring(1);  //first
+            }
+            if (subKey.length() > 0) {
+                if (tempObject != null && tempObject instanceof Map) {
+                    return getObjectFromMap(subKey, (Map) tempObject);
+                }
+            }
+
+            return tempObject;
+
+        } else if (key.contains(".")) {
             String subKey = key.substring(key.indexOf(".") + 1);
             key = key.substring(0, key.indexOf("."));
 
@@ -625,18 +644,17 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             if (tempObject != null) {
                 return getObjectFromMap(subKey, tempObject);
             }
-        } else {
-            if (key.contains("[") && key.contains("]")) {
-                String tempKey = key.substring(0, key.indexOf("["));
-                int number = Integer.parseInt(key.substring(key.indexOf("[") + 1, key.indexOf("]")));
-                Object tempObjectArray[] = (Object[]) object.get(tempKey);
-                if (tempObjectArray != null && tempObjectArray.length > number) {
-                    return tempObjectArray[number];
-                }
-            } else {
-                return object.get(key);
+        } else if (key.contains("[") && key.contains("]")) {
+            String tempKey = key.substring(0, key.indexOf("["));
+            int number = Integer.parseInt(key.substring(key.indexOf("[") + 1, key.indexOf("]")));
+            Object tempObjectArray[] = (Object[]) object.get(tempKey);
+            if (tempObjectArray != null && tempObjectArray.length > number) {
+                return tempObjectArray[number];
             }
+        } else {
+            return object.get(key);
         }
+        
         return null;
     }
 
