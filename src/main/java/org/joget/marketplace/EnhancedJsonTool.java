@@ -112,8 +112,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         String accessToken = "";
         String accessTokenCheck = (String) properties.get("accessToken");
         if ("true".equalsIgnoreCase(accessTokenCheck)) {
-            TokenApiUtil tokenUtil = new TokenApiUtil();
-            accessToken = tokenUtil.getToken(properties);
+            accessToken = new TokenApiUtil().getToken(properties);
         }
 
         String jsonUrl = (String) properties.get("jsonUrl");

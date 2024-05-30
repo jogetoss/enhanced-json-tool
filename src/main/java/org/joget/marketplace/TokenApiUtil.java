@@ -26,17 +26,16 @@ public class TokenApiUtil {
         String accessToken = "";
         String tokenUrl = (String) properties.get("tokenUrl");
         String tokenRequestType = (String) properties.get("tokenRequestType");
-        String tokenJsonBoy = (String) properties.get("tokenJsonBoy");
+        String tokenJsonBody = (String) properties.get("tokenJsonBody");
         String tokenFieldName = (String) properties.get("tokenFieldName");
-        CloseableHttpClient client = null;
+        
+        CloseableHttpClient client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
         HttpRequestBase tokenRequest = null;
+        
         if ("post".equalsIgnoreCase(tokenRequestType)) {
             try {
-                client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
                 tokenRequest = new HttpPost(tokenUrl);
-                StringEntity entity;
-                tokenRequest = new HttpPost(tokenUrl);
-                entity = new StringEntity(tokenJsonBoy);
+                StringEntity entity = new StringEntity(tokenJsonBody);
                 ((HttpPost) tokenRequest).setEntity(entity);
                 tokenRequest.setHeader("Accept", "application/json");
                 tokenRequest.setHeader("Content-Type", "application/json");
@@ -65,7 +64,6 @@ public class TokenApiUtil {
             }
         } else {
             try {
-                client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
                 tokenRequest = new HttpGet(tokenUrl);
                 HttpResponse response = client.execute(tokenRequest);
                 if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300) {
@@ -166,5 +164,4 @@ public class TokenApiUtil {
         LogUtil.info(getClassName(), "Field " + fieldName + " in any JSON object within the array.");
         return null;
     }
-
 }

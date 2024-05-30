@@ -40,8 +40,8 @@
                 ]
             },
             {
-                "name": "tokenJsonBoy",
-                "label": "@@app.enhancedJsonTool.tokenJsonBoy@@",
+                "name": "tokenJsonBody",
+                "label": "@@app.enhancedJsonTool.tokenJsonBody@@",
                 "type": "textarea",
                 "control_field": "tokenRequestType",
                 "control_value": "post"
