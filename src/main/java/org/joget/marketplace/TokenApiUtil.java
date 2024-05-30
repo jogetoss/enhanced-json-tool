@@ -14,7 +14,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.joget.commons.util.LogUtil;
 import java.net.ProxySelector;
+import java.util.HashMap;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
+import org.joget.workflow.model.WorkflowAssignment;
+import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,22 +30,55 @@ import org.json.JSONTokener;
 public class TokenApiUtil {
 
     public String getToken(Map properties) {
+        WorkflowAssignment wfAssignment = (WorkflowAssignment) properties.get("workflowAssignment");
+        
         String accessToken = "";
         String tokenUrl = (String) properties.get("tokenUrl");
         String tokenRequestType = (String) properties.get("tokenRequestType");
-        String tokenJsonBody = (String) properties.get("tokenJsonBody");
         String tokenFieldName = (String) properties.get("tokenFieldName");
         
         CloseableHttpClient client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
         HttpRequestBase tokenRequest = null;
         
         if ("post".equalsIgnoreCase(tokenRequestType)) {
+            String tokenPostMethod = (String) properties.get("tokenPostMethod");
+            
             try {
                 tokenRequest = new HttpPost(tokenUrl);
-                StringEntity entity = new StringEntity(tokenJsonBody);
-                ((HttpPost) tokenRequest).setEntity(entity);
-                tokenRequest.setHeader("Accept", "application/json");
-                tokenRequest.setHeader("Content-Type", "application/json");
+                
+                if ("jsonPayload".equals(tokenPostMethod)) {
+                    JSONObject obj = new JSONObject();
+                    Object[] paramsValues = (Object[]) properties.get("tokenParams");
+                    for (Object o : paramsValues) {
+                        Map mapping = (HashMap) o;
+                        String name = mapping.get("name").toString();
+                        String value = mapping.get("value").toString();
+                        obj.accumulate(name, WorkflowUtil.processVariable(value, "", wfAssignment));
+                    }
+
+                    StringEntity requestEntity = new StringEntity(obj.toString(4), "UTF-8");
+                    ((HttpPost) tokenRequest).setEntity(requestEntity);
+                    tokenRequest.setHeader("Accept", "application/json");
+                    tokenRequest.setHeader("Content-type", "application/json");
+                } else if ("custom".equals(tokenPostMethod)) {
+                    StringEntity requestEntity = new StringEntity((String) properties.get("tokenCustomPayload"), "UTF-8");
+                    ((HttpPost) tokenRequest).setEntity(requestEntity);
+                    tokenRequest.setHeader("Accept", "application/json");
+                    tokenRequest.setHeader("Content-type", "application/json");
+                } else {
+                    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                    Object[] paramsValues = (Object[]) properties.get("tokenParams");
+                    for (Object o : paramsValues) {
+                        Map mapping = (HashMap) o;
+                        String name = mapping.get("name").toString();
+                        String value = mapping.get("value").toString();
+                        builder.addPart(name, new StringBody(value, ContentType.MULTIPART_FORM_DATA));
+                    }
+                    
+                    HttpEntity entity = builder.build();
+                    ((HttpPost) tokenRequest).setEntity(entity);
+                }
+                
                 HttpResponse response = client.execute(tokenRequest);
                 if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300) {
                     String jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
@@ -46,9 +86,7 @@ public class TokenApiUtil {
                         accessToken = getFieldValueFromResponse(jsonResponse, tokenFieldName);
                     }
                 }
-            } catch (UnsupportedEncodingException ex) {
-                LogUtil.error(getClassName(), ex, ex.getMessage());
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 LogUtil.error(getClassName(), ex, ex.getMessage());
             } finally {
                 try {
@@ -73,7 +111,7 @@ public class TokenApiUtil {
                     }
                 }
             } catch (IOException ex) {
-                LogUtil.error(EnhancedJsonTool.class.getName(), ex, ex.getMessage());
+                LogUtil.error(getClassName(), ex, ex.getMessage());
             } finally {
                 try {
                     if (tokenRequest != null) {
@@ -106,7 +144,7 @@ public class TokenApiUtil {
                 return null;
             }
         } catch (JSONException ex) {
-            LogUtil.error(EnhancedJsonTool.class.getName(), ex, ex.getMessage());
+            LogUtil.error(getClassName(), ex, ex.getMessage());
             return null;
         }
     }

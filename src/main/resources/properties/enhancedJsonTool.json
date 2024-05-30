@@ -40,11 +40,55 @@
                 ]
             },
             {
-                "name": "tokenJsonBody",
-                "label": "@@app.enhancedJsonTool.tokenJsonBody@@",
-                "type": "textarea",
+                "name": "tokenPostMethod",
+                "label": "@@app.jsontool.payloadType@@",
+                "type": "selectbox",
+                "value": "",
+                "options": [
+                    {
+                        "value": "",
+                        "label": "@@app.jsontool.postMethod.parameters@@"
+                    },
+                    {
+                        "value": "jsonPayload",
+                        "label": "@@app.jsontool.postMethod.jsonPayload@@"
+                    },
+                    {
+                        "value": "custom",
+                        "label": "@@app.jsontool.postMethod.customJsonPayload@@"
+                    }
+                ],
                 "control_field": "tokenRequestType",
-                "control_value": "post"
+                "control_value": "post",
+                "control_use_regex": "false"
+            },
+            {
+                "name": "tokenParams",
+                "label": "@@app.jsontool.postMethod.parameters@@",
+                "type": "grid",
+                "columns": [
+                    {
+                        "key": "name",
+                        "label": "@@app.jsontool.name@@"
+                    },
+                    {
+                        "key": "value",
+                        "label": "@@app.jsontool.value@@"
+                    }
+                ],
+                "control_field": "tokenPostMethod",
+                "control_value": "^((?!custom).)*$",
+                "control_use_regex": "true"
+            },
+            {
+                "name": "tokenCustomPayload",
+                "label": "@@app.jsontool.postMethod.customJsonPayload@@",
+                "type": "codeeditor",
+                "mode": "json",
+                "control_field": "tokenPostMethod",
+                "control_value": "custom",
+                "control_use_regex": "false",
+                "required": "true"
             },
             {
                 "name": "tokenFieldName",
