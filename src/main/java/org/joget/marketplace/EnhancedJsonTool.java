@@ -61,6 +61,9 @@ import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import java.net.ProxySelector;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.ConnectTimeoutException;
+import java.net.SocketTimeoutException;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
 public class EnhancedJsonTool extends DefaultApplicationPlugin {
@@ -79,7 +82,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
     @Override
     public String getVersion() {
-        return "7.0.5";
+        return "7.0.6";
     }
 
     @Override
@@ -108,6 +111,26 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         ApplicationContext ac = AppUtil.getApplicationContext();
         WorkflowManager workflowManager = (WorkflowManager) ac.getBean("workflowManager");
 
+        // Retrieve timeout values from plugin properties
+        int connectionTimeout = 30000; // Default to 30,000 milliseconds (30 seconds)
+        int socketTimeout = 30000;     // Default to 30,000 milliseconds (30 seconds)
+
+        String connectionTimeoutStr = (String) properties.get("connectionTimeout");
+        String socketTimeoutStr = (String) properties.get("socketTimeout");
+
+        try {
+            if (connectionTimeoutStr != null && !connectionTimeoutStr.isEmpty()) {
+                connectionTimeout = Integer.parseInt(connectionTimeoutStr) * 1000;
+            }
+            if (socketTimeoutStr != null && !socketTimeoutStr.isEmpty()) {
+                socketTimeout = Integer.parseInt(socketTimeoutStr) * 1000;
+            }
+        } catch (NumberFormatException e) {
+            LogUtil.warn(getClass().getName(), "Invalid timeout value provided. Using default timeouts.");
+        }
+        LogUtil.info(getClass().getName(), "Connection Timeout set to: " + connectionTimeout + " ms");
+        LogUtil.info(getClass().getName(), "Socket Timeout set to: " + socketTimeout + " ms");
+
         // process the accessToken call if checked
         String accessToken = "";
         String accessTokenCheck = (String) properties.get("accessToken");
@@ -124,7 +147,15 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         Object jsonResponseObjectRaw = null;
 
         try {
-            client = HttpClients.custom().setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault())).build();
+            RequestConfig config = RequestConfig.custom()
+                    .setConnectTimeout(connectionTimeout)
+                    .setSocketTimeout(socketTimeout)
+                    .build();
+
+            client = HttpClients.custom()
+                    .setDefaultRequestConfig(config)
+                    .setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+                    .build();
             jsonUrl = WorkflowUtil.processVariable(jsonUrl, "", wfAssignment);
             jsonUrl = StringUtil.encodeUrlParam(jsonUrl);
 
@@ -361,7 +392,13 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                 }
             }
 
+            // Connection timeout being checked when trying to connect
+            LogUtil.info(getClass().getName(), "Attempting to connect to " + jsonUrl);
+            long startTime = System.currentTimeMillis();
             HttpResponse response = client.execute(request);
+            long connectionTime = System.currentTimeMillis() - startTime;
+            LogUtil.info(getClass().getName(), "Connection established in " + connectionTime + " ms");
+
             if ("true".equalsIgnoreCase(getPropertyString("debugMode"))) {
                 LogUtil.info(EnhancedJsonTool.class.getName(), jsonUrl + " returned with status : " + response.getStatusLine().getStatusCode());
             }
@@ -478,7 +515,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                     filePath = filePath + fileName;
 
                     FileOutputStream fos = null;
-                    try ( InputStream is = response.getEntity().getContent()) {
+                    try (InputStream is = response.getEntity().getContent()) {
                         fos = new FileOutputStream(new File(filePath));
                         int inByte;
                         while ((inByte = is.read()) != -1) {
@@ -502,6 +539,10 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
             return jsonResponseObjectRaw;
 
+        } catch (ConnectTimeoutException e) {
+            LogUtil.error(getClass().getName(), e, "Connection timed out while attempting to connect to " + jsonUrl);
+        } catch (SocketTimeoutException e) {
+            LogUtil.error(getClass().getName(), e, "Socket timed out while waiting for data from " + jsonUrl);
         } catch (Exception ex) {
             LogUtil.error(getClass().getName(), ex, "");
 
@@ -653,7 +694,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         } else {
             return object.get(key);
         }
-        
+
         return null;
     }
 

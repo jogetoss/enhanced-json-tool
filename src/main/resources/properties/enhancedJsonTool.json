@@ -231,7 +231,24 @@
                         "label": ""
                     }
                 ]
+            },
+            {
+                "name": "connectionTimeout",
+                "label": "Connection Timeout (seconds)",
+                "type": "number",
+                "value": "",
+                "required": "false",
+                "description": "Specify the maximum time to wait for a connection to be established. Leave blank for default."
+            },
+            {
+                "name": "socketTimeout",
+                "label": "Socket Timeout (seconds)",
+                "type": "number",
+                "value": "",
+                "required": "false",
+                "description": "Specify the maximum time to wait for data after a connection is established. Leave blank for default."
             }
+            
         ]
     },
     {
