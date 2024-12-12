@@ -4,7 +4,7 @@
     <groupId>org.joget.marketplace</groupId>
     <artifactId>enhanced-json-tool</artifactId>
     <packaging>bundle</packaging>
-    <version>7.0.6</version>
+    <version>7.0.7</version>
     <name>enhanced-json-tool</name>
     <url>https://www.joget.org</url>
     <build>
