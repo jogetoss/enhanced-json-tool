@@ -404,12 +404,13 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             }
 
             String responseType = getPropertyString("responseType");
+            jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
 
             if (!responseType.isEmpty() && response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300) {
 
                 if (responseType.equalsIgnoreCase("JSON")) {
                     //if(response.getEntity().getContentType().getValue().equalsIgnoreCase("application/json")){
-                    jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
+                    
                     String jsonResponseFormatted = jsonResponse;
                     if (jsonResponseFormatted != null && !jsonResponseFormatted.isEmpty()) {
                         if (jsonResponseFormatted.startsWith("[") && jsonResponseFormatted.endsWith("]")) {
