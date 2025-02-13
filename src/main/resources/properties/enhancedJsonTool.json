@@ -452,16 +452,6 @@
                 "control_use_regex": "true"
             },
             {
-                "name": "responseStatusResponseDataField",
-                "label": "@@app.jsontool.responseStatusResponseDataField@@",
-                "type": "selectbox",
-                "options_ajax_on_change": "formDefId:responseStatusFormDefId",
-                "options_ajax": "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
-                "control_field": "responseStatusFormDefId",
-                "control_value": ".+",
-                "control_use_regex": "true"
-            },
-            {
                 "name": "responseStatusStatusField",
                 "label": "@@app.jsontool.responseStatusStatusField@@",
                 "type": "selectbox",
@@ -472,6 +462,21 @@
                 "control_value": ".+",
                 "control_use_regex": "true"
             },
+            {
+                "name": "responseStatusResponseDataField",
+                "label": "@@app.jsontool.responseStatusResponseDataField@@",
+                "type": "selectbox",
+                "options_ajax_on_change": "formDefId:responseStatusFormDefId",
+                "options_ajax": "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options",
+                "control_field": "responseStatusFormDefId",
+                "control_value": ".+",
+                "control_use_regex": "true"
+            },
+            {
+                "name":"responseStatusMultirowBaseObject",
+                "label":"@@app.jsontool.baseJsonObject@@",
+                "type":"textfield"
+             },
             {
                 "name": "responseStatusFieldMapping",
                 "label": "@@app.jsontool.fieldMapping@@",
@@ -484,8 +489,8 @@
                         "options_ajax": "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
                     },
                     {
-                        "key": "value",
-                        "label": "@@app.jsontool.value@@"
+                        "key": "jsonObjectName",
+                        "label": "@@app.jsontool.jsonObjectName@@"
                     }
                 ]
             }

@@ -82,7 +82,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
     @Override
     public String getVersion() {
-        return "7.0.7";
+        return "7.0.8";
     }
 
     @Override
@@ -406,7 +406,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             String responseType = getPropertyString("responseType");
             jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
 
-            if (!responseType.isEmpty() && response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 300) {
+            if (!responseType.isEmpty()) {
 
                 if (responseType.equalsIgnoreCase("JSON")) {
                     //if(response.getEntity().getContentType().getValue().equalsIgnoreCase("application/json")){
@@ -535,7 +535,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             }
 
             if (!getPropertyString("responseStatusFormDefId").isEmpty()) {
-                storeStatusToForm(wfAssignment, properties, String.valueOf(response.getStatusLine().getStatusCode()), jsonResponse);
+                storeStatusToForm(wfAssignment, properties, String.valueOf(response.getStatusLine().getStatusCode()), jsonResponse, jsonResponseObject);
             }
 
             return jsonResponseObjectRaw;
@@ -551,7 +551,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                 workflowManager.activityVariable(wfAssignment.getActivityId(), getPropertyString("responseStatusWorkflowVariable"), ex.toString());
             }
             if (!getPropertyString("responseStatusFormDefId").isEmpty()) {
-                storeStatusToForm(wfAssignment, properties, ex.toString() + " - " + ex.getMessage(), jsonResponse);
+                storeStatusToForm(wfAssignment, properties, ex.toString() + " - " + ex.getMessage(), jsonResponse, jsonResponseObject);
             }
         } finally {
             try {
@@ -569,12 +569,13 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         return null;
     }
 
-    protected void storeStatusToForm(WorkflowAssignment wfAssignment, Map properties, String status, String jsonResponse) {
+    protected void storeStatusToForm(WorkflowAssignment wfAssignment, Map properties, String status, String jsonResponse, Map object) {
         String formDefId = (String) properties.get("responseStatusFormDefId");
         String statusField = (String) properties.get("responseStatusStatusField");
         String responseDataField = (String) properties.get("responseStatusResponseDataField");
         String idField = (String) properties.get("responseStatusIdField");
         Object[] fieldMapping = (Object[]) properties.get("responseStatusFieldMapping");
+        String multirowBaseObjectName = (String) properties.get("responseStatusMultirowBaseObject");
 
         if (formDefId != null && formDefId.trim().length() > 0) {
             ApplicationContext ac = AppUtil.getApplicationContext();
@@ -584,6 +585,18 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             FormRowSet rowSet = new FormRowSet();
             FormRow row = new FormRow();
 
+            if (multirowBaseObjectName != null && multirowBaseObjectName.trim().length() > 0 && getObjectFromMap(multirowBaseObjectName, object) != null && getObjectFromMap(multirowBaseObjectName, object).getClass().isArray()) {
+                Object[] baseObjectArray = (Object[]) getObjectFromMap(multirowBaseObjectName, object);
+                if (baseObjectArray != null && baseObjectArray.length > 0) {
+                    rowSet.setMultiRow(true);
+                    for (int i = 0; i < baseObjectArray.length; i++) {
+                        row = getRow(wfAssignment, multirowBaseObjectName, i, fieldMapping, object);
+                    }
+                }
+            } else {
+                row = getRow(wfAssignment, null, null, fieldMapping, object);
+            }
+
             if (!responseDataField.isEmpty()) {
                 row.put(responseDataField, jsonResponse);
             }
@@ -592,11 +605,6 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                 row.put(idField, appService.getOriginProcessId(wfAssignment.getProcessId()));
             } else {
                 row.setId(appService.getOriginProcessId(wfAssignment.getProcessId()));
-            }
-
-            for (Object obj : fieldMapping) {
-                Map map = (Map) obj;
-                row.put(map.get("field").toString(), map.get("value").toString());
             }
 
             row.put(statusField, status);
