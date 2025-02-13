@@ -476,7 +476,7 @@
                 "name":"responseStatusMultirowBaseObject",
                 "label":"@@app.jsontool.baseJsonObject@@",
                 "type":"textfield"
-             },
+            },
             {
                 "name": "responseStatusFieldMapping",
                 "label": "@@app.jsontool.fieldMapping@@",
@@ -491,6 +491,24 @@
                     {
                         "key": "jsonObjectName",
                         "label": "@@app.jsontool.jsonObjectName@@"
+                    }
+                ]
+            },
+            {
+                "name": "responseStatusFieldMappingAdditional",
+                "description": "@@app.enhancedJsonTool.responseStatusFieldMappingAdditional.desc@@",
+                "label": "@@app.enhancedJsonTool.responseStatusFieldMappingAdditional@@",
+                "type": "grid",
+                "columns": [
+                    {
+                        "key": "field",
+                        "label": "@@app.jsontool.fieldName@@",
+                        "options_ajax_on_change": "formDefId:responseStatusFormDefId",
+                        "options_ajax": "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/form/columns/options"
+                    },
+                    {
+                        "key": "value",
+                        "label": "@@app.jsontool.value@@"
                     }
                 ]
             }
