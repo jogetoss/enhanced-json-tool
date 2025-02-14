@@ -1,12 +1,11 @@
 package org.joget.marketplace;
 
 import bsh.Interpreter;
-import java.io.BufferedReader;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,6 +64,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ConnectTimeoutException;
 import java.net.SocketTimeoutException;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
+import org.apache.commons.io.IOUtils;
 
 public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
@@ -280,7 +280,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                                     }
                                     URL u = new URL(path);
                                     CustomURLDataSource c = new CustomURLDataSource(u);
-                                    builder.addBinaryBody(parameterName, c.getInputStream().readAllBytes(), ContentType.create(c.getContentType()), c.getName());
+                                    builder.addBinaryBody(parameterName, IOUtils.toByteArray(c.getInputStream()), ContentType.create(c.getContentType()), c.getName());
 
                                 }
                             } catch (Exception e) {
@@ -515,17 +515,13 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
                     filePath = filePath + fileName;
 
-                    FileOutputStream fos = null;
-                    try (InputStream is = response.getEntity().getContent()) {
-                        fos = new FileOutputStream(new File(filePath));
-                        int inByte;
-                        while ((inByte = is.read()) != -1) {
-                            fos.write(inByte);
+                    try (InputStream is = response.getEntity().getContent();
+                        FileOutputStream fos = new FileOutputStream(filePath)) {
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            fos.write(buffer, 0, bytesRead);
                         }
-                    } catch (Exception ex) {
-                        LogUtil.error(getClass().getName(), ex, "Cannot save file");
-                    } finally {
-                        fos.close();
                     }
                 }
             }
@@ -661,7 +657,8 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                 String variable = mapping.get("variable").toString();
                 String jsonObjectName = mapping.get("jsonObjectName").toString();
 
-                String value = (String) getObjectFromMap(jsonObjectName, object);
+                Object valueObj = getObjectFromMap(jsonObjectName, object);
+                String value = (valueObj != null) ? String.valueOf(valueObj) : null;
 
                 if (value != null) {
                     workflowManager.activityVariable(wfAssignment.getActivityId(), variable, value);
@@ -703,7 +700,8 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             String tempKey = key.substring(0, key.indexOf("["));
             int number = Integer.parseInt(key.substring(key.indexOf("[") + 1, key.indexOf("]")));
             Object tempObjectArray[] = (Object[]) object.get(tempKey);
-            if (tempObjectArray != null && tempObjectArray.length > number) {
+
+            if (number >= 0 && tempObjectArray != null && number < tempObjectArray.length) {
                 return tempObjectArray[number];
             }
         } else {
@@ -752,33 +750,6 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
         row.setDateCreated(currentDate);
 
         return row;
-    }
-
-    protected String streamToString(InputStream in) {
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            StringBuilder sb = new StringBuilder();
-
-            String line = null;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    LogUtil.error(getClass().getName(), e, "");
-                }
-            }
-
-            return sb.toString();
-        } catch (Exception e) {
-            LogUtil.error(EnhancedJsonTool.class.getName(), e, "");
-        }
-        return "";
     }
 
     protected Object executeScript(String script, Map properties) {
