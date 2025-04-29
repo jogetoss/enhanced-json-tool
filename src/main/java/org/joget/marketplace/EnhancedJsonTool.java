@@ -82,7 +82,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
     @Override
     public String getVersion() {
-        return "7.0.9";
+        return "7.0.10";
     }
 
     @Override
@@ -404,13 +404,13 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
             }
 
             String responseType = getPropertyString("responseType");
-            jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
 
             if (!responseType.isEmpty()) {
 
                 if (responseType.equalsIgnoreCase("JSON")) {
                     //if(response.getEntity().getContentType().getValue().equalsIgnoreCase("application/json")){
-                    
+                    jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
+
                     String jsonResponseFormatted = jsonResponse;
                     if (jsonResponseFormatted != null && !jsonResponseFormatted.isEmpty()) {
                         if (jsonResponseFormatted.startsWith("[") && jsonResponseFormatted.endsWith("]")) {
@@ -498,8 +498,10 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
                         row.put(fileUploadID, fileName);
                     } else {
                         rowSet = appService.loadFormData(appDef.getAppId(), appDef.getVersion().toString(), formDefId, recordId);
-                        row = rowSet.get(0);
-                        rowSet.remove(0);
+                        if(rowSet.size() != 0){
+                            row = rowSet.get(0);
+                            rowSet.remove(0);
+                        }
                     }
                     row.put(fileUploadID, fileName);
                     rowSet.add(0, row);
@@ -508,7 +510,7 @@ public class EnhancedJsonTool extends DefaultApplicationPlugin {
 
                     //save actual file into wflow folder
                     String tableName = appService.getFormTableName(appDef, formDefId);
-                    String filePath = FileUtil.getUploadPath(tableName, wfAssignment.getProcessId());
+                    String filePath = FileUtil.getUploadPath(tableName, recordId);
 
                     File file = new File(filePath);
                     file.mkdirs();
