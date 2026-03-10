@@ -1,4 +1,12 @@
 # Description
+⚠️ DEPRECATED ⚠️
+
+This repository is no longer maintained.
+
+➡️ Please use the new repository: <br>
+https://github.com/jogetoss/enhanced-json-api
+<br><br>
+
 
 This plugin works just like the default bundled JSON Tool in Joget, but with the following added abilities:-
 
