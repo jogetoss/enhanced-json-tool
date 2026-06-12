@@ -4,7 +4,7 @@
     <groupId>org.joget.marketplace</groupId>
     <artifactId>enhanced-json-tool</artifactId>
     <packaging>bundle</packaging>
-    <version>7.0.10</version>
+    <version>7.0.11</version>
     <name>enhanced-json-tool</name>
     <url>https://www.joget.org</url>
     <build>
@@ -89,11 +89,13 @@
             <artifactId>httpmime</artifactId>
             <version>4.5.13</version>
         </dependency>
-        <dependency>
+        
+<!--        <dependency>
             <groupId>org.apache-extras.beanshell</groupId>
             <artifactId>bsh</artifactId>
             <version>2.0b6</version>
-        </dependency>
+        </dependency>-->
+        
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
